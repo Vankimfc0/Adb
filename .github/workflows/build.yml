@@ -22,7 +22,13 @@ jobs:
           gradle-version: 8.9
       - name: Build debug APK
         working-directory: AdbManager
-        run: gradle assembleDebug --stacktrace
+        run: |
+          set -o pipefail
+          gradle assembleDebug --console=plain 2>&1 | tee build.log
+      - name: Tóm tắt lỗi
+        if: failure()
+        working-directory: AdbManager
+        run: grep -E '^(e|error): |What went wrong' -A2 build.log | head -60
       - uses: actions/upload-artifact@v4
         with:
           name: AdbManager-debug
